@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting…</title>
+  <style>
+    body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f5f5f5; }
+    .box { text-align: center; background: #fff; padding: 2rem 3rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    p { color: #555; margin: 0.5rem 0 0; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Redirecting…</h1>
+    <p id="status">Copying to clipboard and redirecting.</p>
+  </div>
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var url = params.get('u');
+      var text = params.get('c');
+
+      if (!url) {
+        document.getElementById('status').textContent = 'No URL provided (u parameter is missing).';
+        return;
+      }
+
+      function redirect() {
+        window.location.href = url;
+      }
+
+      if (text && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(redirect, redirect);
+      } else {
+        // Fallback for browsers without Clipboard API
+        if (text) {
+          try {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            document.execCommand('copy'); // deprecated fallback for older browsers
+            document.body.removeChild(ta);
+          } catch (e) { /* ignore */ }
+        }
+        redirect();
+      }
+    })();
+  </script>
+</body>
+</html>
