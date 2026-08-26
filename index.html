@@ -30,22 +30,54 @@
         window.location.href = url;
       }
 
+      function execCommandCopy() {
+        if (!text) return false;
+        try {
+          var ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          var ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+          return ok;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function showManualButton() {
+        var status = document.getElementById('status');
+        status.textContent = 'Click the button below to copy and continue.';
+        var btn = document.createElement('button');
+        btn.textContent = 'Copy & Continue';
+        btn.style.cssText = 'margin-top:1rem;padding:0.5rem 1.5rem;font-size:1rem;cursor:pointer;';
+        btn.addEventListener('click', function () {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(redirect, function () {
+              execCommandCopy();
+              redirect();
+            });
+          } else {
+            execCommandCopy();
+            redirect();
+          }
+        });
+        document.querySelector('.box').appendChild(btn);
+      }
+
       if (text && navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(redirect, redirect);
+        navigator.clipboard.writeText(text).then(redirect, function (err) {
+          // Firefox (and others) may deny clipboard access without a user gesture.
+          // Fall back to showing a button the user can click.
+          showManualButton();
+        });
       } else {
         // Fallback for browsers without Clipboard API
         if (text) {
-          try {
-            var ta = document.createElement('textarea');
-            ta.value = text;
-            ta.style.position = 'fixed';
-            ta.style.opacity = '0';
-            document.body.appendChild(ta);
-            ta.focus();
-            ta.select();
-            document.execCommand('copy'); // deprecated fallback for older browsers
-            document.body.removeChild(ta);
-          } catch (e) { /* ignore */ }
+          execCommandCopy();
         }
         redirect();
       }
