@@ -20,6 +20,9 @@
       var params = new URLSearchParams(window.location.search);
       var url = params.get('u');
       var text = params.get('c');
+      if (text !== null) {
+        text = text.replace(/\\n/g, '\n');
+      }
 
       if (!url) {
         document.getElementById('status').textContent = 'No URL provided (u parameter is missing).';
